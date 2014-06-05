@@ -4,11 +4,11 @@
 #       the list of xpaths that you found. 
 # TODO  make the class files and put them in the dragon_drop directory. 
 
-gem "test-unit"
+#gem "test-unit"
 require "rubygems"
 require 'fox16'
 require 'nokogiri' # used for getting the xml of a webpage and searching it for xpaths. 
-require "test/unit" # this is used so we can get a default call to setup/teardown at the beginning/end of a test. helps with cleanup. 
+#require "test/unit" # this is used so we can get a default call to setup/teardown at the beginning/end of a test. helps with cleanup. 
 require "open-uri"
 require "watir-webdriver"
 require 'rexml/document'
@@ -28,13 +28,13 @@ $xpath_to_name = {}
 $name_to_xpath = {}
 
 # TODO remove any dependency on test-unit stuff--it's not a "test", it's a script. 
-class Test_Case < Test::Unit::TestCase
+#class Test_Case < Test::Unit::TestCase
 
-  # teardown is run after every test
-  def teardown
-    $b.close
-    log("**************************** Closing browser session ****************************")
-  end
+  # # teardown is run after every test
+  # def teardown
+  #   $b.close
+  #   log("**************************** Closing browser session ****************************")
+  # end
 
   def print_name_to_xpath
     # print out what the dictionary would look like if you were to 
@@ -60,24 +60,27 @@ class Test_Case < Test::Unit::TestCase
 
         firepath_path = nil
         firebug_path = nil
-        Find.find(ENV['APPDATA'] + "/Mozilla/Firefox/Profiles") do |path|
-            firepath_path = path if path =~ /.*FireXPath.*.xpi/
-            firebug_path = path if path =~ /.*firebug.*.xpi/
-        end
+        # Find.find(ENV['APPDATA'] + "/Mozilla/Firefox/Profiles") do |path|
+        #     firepath_path = path if path =~ /.*FireXPath.*.xpi/
+        #     firebug_path = path if path =~ /.*firebug.*.xpi/
+        # end
 
-        # if firepath_path isn't populated, tell the user that they need it. 
-        if firepath_path == nil or firebug_path == nil
-            log("Firebug and Firepath both need to be present to use Firepath--are you sure both are installed? Visit the QA Wiki and search for \"Firepath\" or \"Firebug\" for details.")
-            $b = Watir::Browser.new :ff, :http_client => client
-        else
-            log("Firebug location is #{firebug_path}")
-            log("Firepath location is #{firepath_path}")
-            debug_profile = Selenium::WebDriver::Firefox::Profile.new
-            debug_profile.add_extension firepath_path
-            debug_profile.add_extension firebug_path
-            $b = Watir::Browser.new :ff, :http_client => client, :profile => debug_profile            
-        end
+        # # if firepath_path isn't populated, tell the user that they need it. 
+        # if firepath_path == nil or firebug_path == nil
+        #     log("You can use Firepath within Firefox, but need both Firebug and Firepath installed. It's a helpful tool for troubleshooting later.")
+        #     $b = Watir::Browser.new :ff, :http_client => client
+        # else
+        #     log("Firebug location is #{firebug_path}")
+        #     log("Firepath location is #{firepath_path}")
+        #     debug_profile = Selenium::WebDriver::Firefox::Profile.new
+        #     debug_profile.add_extension firepath_path
+        #     debug_profile.add_extension firebug_path
+        #     $b = Watir::Browser.new :ff, :http_client => client, :profile => debug_profile            
+        # end
+        $b = Watir::Browser.new :chrome
+
     end
+
   end
 
   def go_to_url(url)
@@ -119,7 +122,11 @@ class Test_Case < Test::Unit::TestCase
                 x = x.join(' and ')
                 x.gsub!("/", "\/")
                 #f =  "//" + xpath.ancestors.reverse.map{ |node| node.name }[-2..-1].join('/') + "/" + type_no_slashes + "[" + x + "]"
-                f =  "//" + xpath.ancestors.reverse.map{ |node| node.name }[-2..-1].join('/') + "/" + type + "[" + x + "]"
+                if x != "" 
+                    f =  "//" + xpath.ancestors.reverse.map{ |node| node.name }[-2..-1].join('/') + "/" + type + "[" + x + "]"
+                else 
+                    f =  "//" + xpath.ancestors.reverse.map{ |node| node.name }[-2..-1].join('/') + "/" + type
+                end
                 # SPECIAL CASE: this will result in an xpath beginning with //
                 # if there's an html in there it might result in //html, which won't find a match. 
                 # replace /html/ with //
@@ -131,6 +138,10 @@ class Test_Case < Test::Unit::TestCase
                 else
                     $xpaths.push(f)
                 end
+
+                highlight_element(f)
+                sleep(1)
+                unhighlight_element(f)
 
             end
         end
@@ -183,7 +194,7 @@ class Test_Case < Test::Unit::TestCase
     end
   end
 
-  def test_case
+  #def test_case
 
     # every time an element is mapped, dump the block of code to a text box or something. 
     # comment to the user, whenever they're done, to copy/paste that code into the target class. 
@@ -222,7 +233,7 @@ class Test_Case < Test::Unit::TestCase
     textfield_url.connect(SEL_COMMAND) { go_to_url(textfield_url.text) }
 
     # put some stuff in the code window
-    textfield_code.text = "asdfl;j\nasdl;fjkasf\na;sdlfkjasdf;\nasdkofjasl;dfj\n ;alsdjfl;asfasl;fj\nal;sdkfjasl;f\nasfjasl;fj"
+    #textfield_code.text = "asdfl;j\nasdl;fjkasf\na;sdlfkjasdf;\nasdkofjasl;dfj\n ;alsdjfl;asfasl;fj\nal;sdkfjasl;f\nasfjasl;fj"
 
     # create the app and go into a loop to run it.
     app.create
@@ -416,5 +427,5 @@ class Test_Case < Test::Unit::TestCase
     app.run
 
 
-  end
-end
+  # end
+# end
