@@ -206,31 +206,52 @@ $name_to_xpath = {}
 
     # create the app and window instance
     app = FXApp.new
-    main_window = FXMainWindow.new(app, "Dragon Drop", :width => 640, :height => 480)
+    main_window = FXMainWindow.new(app, "Dragon Drop", :width => 250, :height => 250)
 
-    # setup the groupboxes for controls to go into
-    groupbox_elements = FXGroupBox.new(main_window, "Elements/Navigation", GROUPBOX_TITLE_CENTER|FRAME_RIDGE)
-    groupbox_xpath = FXGroupBox.new(main_window, "XPathElements/Navigation", GROUPBOX_TITLE_CENTER|FRAME_RIDGE)
-    groupbox_browser = FXGroupBox.new(main_window, "Browser/URL", GROUPBOX_TITLE_CENTER|FRAME_RIDGE)
-    groupbox_code = FXGroupBox.new(main_window, "Generated Code", GROUPBOX_TITLE_CENTER|FRAME_RIDGE)
+    # # setup the groupboxes for controls to go into
+    # groupbox_elements = FXGroupBox.new(main_window, "Elements/Navigation", GROUPBOX_TITLE_CENTER|FRAME_RIDGE)
+    # groupbox_xpath = FXGroupBox.new(main_window, "XPathElements/Navigation", GROUPBOX_TITLE_CENTER|FRAME_RIDGE)
+    # groupbox_browser = FXGroupBox.new(main_window, "Browser/URL", GROUPBOX_TITLE_CENTER|FRAME_RIDGE)
+    # groupbox_code = FXGroupBox.new(main_window, "Generated Code", GROUPBOX_TITLE_CENTER|FRAME_RIDGE)
 
-    # add the controls to the appropriate groupboxes upon creation
-    button_find_elements = FXButton.new(groupbox_elements, "Find All on Page", :x => 0)
-    button_previous_element = FXButton.new(groupbox_elements, "< Prev", :x => 100)
-    button_next_element = FXButton.new(groupbox_elements, "Next >", :x => 200)
-    #button_open_browser = FXButton.new(groupbox_browser, "Open Browser")
-    textfield_url = FXTextField.new(groupbox_browser, 30)
-    textfield_code = FXText.new(groupbox_code, :width => 500, :height => 250, :opts => LAYOUT_FIX_WIDTH|TEXT_READONLY)
-    textfield_element_name = FXTextField.new(groupbox_xpath, 50, :width => 50)
-    textfield_element_xpath = FXTextField.new(groupbox_xpath, 50, :width => 50)
-    textfield_xpath_root = FXTextField.new(groupbox_xpath, 50)
+    # # add the controls to the appropriate groupboxes upon creation
+    # button_find_elements = FXButton.new(groupbox_elements, "Find All on Page", :x => 0)
+    # button_previous_element = FXButton.new(groupbox_elements, "< Prev", :x => 100)
+    # button_next_element = FXButton.new(groupbox_elements, "Next >", :x => 200)
+    # #button_open_browser = FXButton.new(groupbox_browser, "Open Browser")
+    # textfield_url = FXTextField.new(groupbox_browser, 30)
+    # textfield_code = FXText.new(groupbox_code, :width => 500, :height => 250, :opts => LAYOUT_FIX_WIDTH|TEXT_READONLY)
+    # textfield_element_name = FXTextField.new(groupbox_xpath, 50, :width => 50)
+    # textfield_element_xpath = FXTextField.new(groupbox_xpath, 50, :width => 50)
+    # textfield_xpath_root = FXTextField.new(groupbox_xpath, 50)
 
-    # connect the controls to the functions
-    button_find_elements.connect(SEL_COMMAND) { get_all_xpaths_on_page }
-    button_previous_element.connect(SEL_COMMAND) { unhighlight_element; $element_index -= 1; highlight_element }
-    button_next_element.connect(SEL_COMMAND) { unhighlight_element; $element_index += 1; highlight_element }
-    #button_open_browser.connect(SEL_COMMAND) { open_browser }
-    textfield_url.connect(SEL_COMMAND) { go_to_url(textfield_url.text) }
+    # # connect the controls to the functions
+    # button_find_elements.connect(SEL_COMMAND) { get_all_xpaths_on_page }
+    # button_previous_element.connect(SEL_COMMAND) { unhighlight_element; $element_index -= 1; highlight_element }
+    # button_next_element.connect(SEL_COMMAND) { unhighlight_element; $element_index += 1; highlight_element }
+    # #button_open_browser.connect(SEL_COMMAND) { open_browser }
+    # textfield_url.connect(SEL_COMMAND) { go_to_url(textfield_url.text) }
+
+
+    contents = FXHorizontalFrame.new(main_window, LAYOUT_SIDE_TOP|FRAME_NONE|LAYOUT_FILL_X|LAYOUT_FILL_Y|PACK_UNIFORM_WIDTH)
+    tabbook = FXTabBook.new(contents,:opts => TABBOOK_LEFTTABS|LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_RIGHT)
+    tab1 = FXTabItem.new(tabbook, "Simple List", nil)
+    listframe = FXHorizontalFrame.new(tabbook, FRAME_THICK|FRAME_RAISED)
+    simplelist = FXList.new(listframe, :opts => LIST_EXTENDEDSELECT|LAYOUT_FILL_X|LAYOUT_FILL_Y)
+    simplelist.appendItem("First Entry")
+    simplelist.appendItem("Second Entry")
+    simplelist.appendItem("Third Entry")
+    simplelist.appendItem("Fourth Entry")
+      
+    # Second item is a file list
+    tab2 = FXTabItem.new(tabbook, "File List", nil)
+    fileframe = FXHorizontalFrame.new(tabbook, FRAME_THICK|FRAME_RAISED)
+    filelist = FXFileList.new(fileframe, :opts => ICONLIST_EXTENDEDSELECT|LAYOUT_FILL_X|LAYOUT_FILL_Y)
+    
+    # Third item is a directory list
+    tab3 = FXTabItem.new(tabbook, "Tree List", nil)
+    dirframe = FXHorizontalFrame.new(tabbook, FRAME_THICK|FRAME_RAISED)
+    dirlist = FXDirList.new(dirframe, :opts => DIRLIST_SHOWFILES|TREELIST_SHOWS_LINES|TREELIST_SHOWS_BOXES|LAYOUT_FILL_X|LAYOUT_FILL_Y)
 
     # put some stuff in the code window
     #textfield_code.text = "asdfl;j\nasdl;fjkasf\na;sdlfkjasdf;\nasdkofjasl;dfj\n ;alsdjfl;asfasl;fj\nal;sdkfjasl;f\nasfjasl;fj"
