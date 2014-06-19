@@ -77,7 +77,7 @@ $name_to_xpath = {}
         #     debug_profile.add_extension firebug_path
         #     $b = Watir::Browser.new :ff, :http_client => client, :profile => debug_profile            
         # end
-        $b = Watir::Browser.new :chrome
+        $b = Watir::Browser.new :ff
 
     end
 
@@ -123,24 +123,24 @@ $name_to_xpath = {}
                 x.gsub!("/", "\/")
                 #f =  "//" + xpath.ancestors.reverse.map{ |node| node.name }[-2..-1].join('/') + "/" + type_no_slashes + "[" + x + "]"
                 if x != "" 
-                    f =  "//" + xpath.ancestors.reverse.map{ |node| node.name }[-2..-1].join('/') + "/" + type + "[" + x + "]"
+                    f =  xpath.ancestors.reverse.map{ |node| node.name }.join('//') + "/" + type + "[" + x + "]"
                 else 
-                    f =  "//" + xpath.ancestors.reverse.map{ |node| node.name }[-2..-1].join('/') + "/" + type
+                    f =  xpath.ancestors.reverse.map{ |node| node.name }.join('//') + "/" + type
                 end
-                # SPECIAL CASE: this will result in an xpath beginning with //
-                # if there's an html in there it might result in //html, which won't find a match. 
-                # replace /html/ with //
-                f.gsub!("/html/", "/")
+
+                # replace the document root node to make it so you can find the element later. 
+                f.gsub!("document/", "/")
 
                 log("   xpath after mods: #{f}")
                 if not $b.element(:xpath => f).visible?
                     log ("   > not visible--skipping")
                 else
                     $xpaths.push(f)
+                    get_minimum_functional_xpath(f)
                 end
 
                 highlight_element(f)
-                sleep(1)
+       #         sleep(1)
                 unhighlight_element(f)
 
             end
@@ -148,7 +148,7 @@ $name_to_xpath = {}
     end
 
     def log(msg)
-        # get today's date 
+        # make log based on today's date 
         time = Time.new
         logfile = File.expand_path(time.strftime('%Y%m%d') + ".log")
         File.open(logfile, 'a') { |file| file.write(time.strftime('%H:%M:%S') + " - " + msg + "\n") }
@@ -159,8 +159,16 @@ $name_to_xpath = {}
   end
 
   def get_minimum_functional_xpath(xpath)
-    original_xpath = xpath 
-    return xpath
+    # take the current xpath and figure out what can be removed from 
+    # the beginning and still have a single hit
+    minimum_xpath = xpath
+    while get_number_of_xpath_hits(xpath) == 1
+        minimum_xpath = xpath
+        xpath = xpath.split("//").shift.join("//")
+    end
+
+    log("minimum xpath is #{minimum_xpath}")
+    return minimum_xpath
   end
 
   def highlight_element(xpath)
@@ -188,7 +196,7 @@ $name_to_xpath = {}
                 var style = element.getAttribute('style')
                 var re = '#{$style_highlight}'
                 var new_style = style.replace(re, '');
-                element.setAttribute('style', new_style) 
+                element.setAttribute('style', new_style)
             }
         ")
     end
@@ -202,7 +210,12 @@ $name_to_xpath = {}
     # may need to figure how to create a new dictionary with name => xpath instead of xpath => name. 
 
     # start by opening the browser. guaranteed that the user's gonna want it if they're running this. 
-    #open_browser
+    open_browser
+    go_to_url "www.slashmail.org"
+    sleep(5)
+    get_all_xpaths_on_page
+    $b.close
+    abort("debug stop")
 
     # create the app and window instance
     app = FXApp.new
